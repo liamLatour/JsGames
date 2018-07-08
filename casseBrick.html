@@ -1,0 +1,302 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Gamedev Canvas Workshop</title>
+    <style>
+    * {
+        padding: 0;
+        margin: 0;
+    }
+    canvas {
+        border:1px solid #d3d3d3;
+        background-color: #f1f1f1;
+    }
+    html, body {
+        width:  100%;
+        height: 100%;
+        margin: 0px;
+    }
+    </style>
+</head>
+<body>
+    <div align="center">
+        <canvas id="Game" width="480" height="320"></canvas>
+    </div>
+
+    <script>
+        var canvas = document.getElementById("Game");
+        var ctx = canvas.getContext("2d");
+        ctx.font = "30px Arial";
+
+        var finished = false;
+        var lvl = [[0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+                   [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+                   [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+                   [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+                   [0, 0, 0, 0, 1, 1, 0, 0, 0, 0]
+                  ];
+
+        var w = 100;
+        var x = canvas.width/2 - w/2;
+        var y = canvas.height - 30;
+        
+        var bpos = [canvas.width/2, canvas.height/2];
+        var vect = [0, 0];
+
+        var rightPressed = false;
+        var leftPressed = false;
+        var mX = 0;
+        var mY = 0;
+
+        document.addEventListener("keydown", keyDownHandler, false);
+        document.addEventListener("keyup", keyUpHandler, false);
+        canvas.addEventListener("click", on_canvas_click, false);
+
+        function on_canvas_click(ev) {
+            mX = ev.clientX - canvas.offsetLeft;
+            mY = ev.clientY - canvas.offsetTop;
+        }
+
+
+        function keyDownHandler(e) {
+            if(e.keyCode == 39) {
+                rightPressed = true;
+            }
+            else if(e.keyCode == 37) {
+                leftPressed = true;
+            }
+        }
+
+        function keyUpHandler(e) {
+            if(e.keyCode == 39) {
+                rightPressed = false;
+            }
+            else if(e.keyCode == 37) {
+                leftPressed = false;
+            }
+        }
+
+        function Player(){
+            ctx.beginPath();
+            ctx.rect(x, y, w, 10);
+            ctx.fillStyle = "rgb(0, 0, 150)";
+            ctx.fill();
+            ctx.closePath();
+
+            Move();
+        }
+
+         function Move(){
+            if(rightPressed){
+                x += 5;
+            }
+            else if(leftPressed){
+                x -= 5;
+            }
+
+            if(x+w > canvas.width){
+                x = canvas.width-w;
+            }
+            else if(x < 0){
+                x = 0;
+            }
+        }
+
+        function Ball(){
+            ctx.beginPath();
+            ctx.arc(bpos[0], bpos[1], 5, 0, 2*Math.PI);
+            ctx.fillStyle = "rgb(150, 0, 0)";
+            ctx.fill();
+            ctx.closePath();
+
+            Phisics();
+        }
+
+        function Phisics(){
+            if(bpos[0] > x && bpos[0] < x+w && bpos[1]+2.5 > y){
+                vect[1] = -5.1;
+                vect[0] += (bpos[0]-(x+(w/2)))/20;
+            }
+            else{
+                vect[1] += 0.05;
+            }
+
+            if(bpos[0] < 2.5 || bpos[0] > canvas.width-2.5){
+                vect[0] -= vect[0]*2;
+            }
+
+            if(bpos[1] < 0){
+                vect[1] = Math.abs(vect[1]*2);
+            }
+
+            if(bpos[1] > y+10){
+                End("You lost :(");
+                finished = true;
+            }
+            
+            bpos[1] += vect[1];
+            bpos[0] += vect[0];
+        }
+
+        function brick(cx, cy){
+            ctx.beginPath();
+            ctx.rect(cx, cy, 20, 10);
+            ctx.fillStyle = "rgb(0, 150, 0)";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function Collision(colx, coly){
+            var left = bpos[0] > colx;
+            var right = bpos[0] < colx+20;
+            var bot = bpos[1] > coly;
+            var top = bpos[1] < coly+10;
+
+            if(left && right && bot && top){
+                var left = bpos[0] - colx;
+                var right = bpos[0] - colx+20;
+                var bot = bpos[1] - coly;
+                var top = bpos[1] - coly+10;
+
+                if(Math.abs(left) < Math.abs(right)){
+                    if(Math.abs(bot) < Math.abs(top)){
+                        if(Math.abs(left) < Math.abs(bot)){
+                            //left
+                            vect[0] = -2;
+                        }
+                        else{
+                            //bot
+                            vect[1] = -1;
+                        }
+                    }
+                    else{
+                        if(Math.abs(left) < Math.abs(top)){
+                            //left
+                            vect[0] = -2;
+                        }
+                        else{
+                            //top
+                            vect[1] = 2;
+                        }
+                    }
+                }
+                else{
+                    if(Math.abs(bot) < Math.abs(top)){
+                        if(Math.abs(right) < Math.abs(bot)){
+                            //right
+                            vect[0] = 2;
+                        }
+                        else{
+                            //bot
+                            vect[1] = -1;
+                        }
+                    }
+                    else{
+                        if(Math.abs(right) < Math.abs(top)){
+                            //right
+                            vect[0] = 2;
+                        }
+                        else{
+                            //top
+                            vect[1] = 2;
+                        }
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        function Bricks(){
+            var still = false;
+
+            for(var i = 0; i<lvl.length; i++){
+                for(var j = 0; j<lvl[i].length; j++){
+                    if(lvl[i][j] == 1){
+                        still = true;
+                        var thix = canvas.width/2 + j*40 - (lvl[i].length-0.5)*20;
+                        var thiy = i*30 + 20;
+                        brick(thix, thiy);
+                        if(Collision(thix, thiy)){
+                            lvl[i][j] = 0;
+                        }                        
+                    }
+                }
+            }
+
+            if(!still){
+                End("Yon won !");
+                finished = true;
+            }
+        }
+
+        function End(tosay){
+            ctx.beginPath();
+            ctx.rect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "rgba(100,100,100,0.5)";
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.fillStyle = "rgb(255, 255, 255)";
+            ctx.fill();
+            ctx.font = "60px Arial";
+            ctx.textAlign="center";
+            ctx.fillText(tosay, canvas.width/2,canvas.height/2);
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.rect(canvas.width/2-60, canvas.height-120, 120, 50);
+            ctx.fillStyle = "rgb(0,0,0)";
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.fillStyle = "rgb(255, 255, 255)";
+            ctx.fill();
+            ctx.font = "30px Arial";
+            ctx.textAlign="center";
+            ctx.fillText("Restart", canvas.width/2, canvas.height-90);
+            ctx.closePath();
+        }
+
+        function restart(){
+            finished = false;
+            lvl = [[0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+                    [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+                    [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+                    [0, 0, 0, 0, 1, 1, 0, 0, 0, 0]
+                    ];
+
+            w = 100;
+            x = canvas.width/2 - w/2;
+            y = canvas.height - 30;
+            
+            bpos = [canvas.width/2, canvas.height/2];
+            vect = [0, 0];
+
+            rightPressed = false;
+            leftPressed = false;
+            mX = 0;
+            mY = 0;
+        }
+
+        function draw(){
+            if(!finished){
+                ctx.clearRect(0,0, canvas.width, canvas.height);
+                Bricks();
+                Player();
+                Ball();                
+            }
+            else{
+                if(mX > canvas.width/2-60 && mX < canvas.width/2+60){
+                    if(mY > canvas.height-120 && mY < canvas.height-70){
+                        restart();
+                    }
+                }
+            }
+        }
+        setInterval(draw, 10);
+    </script>
+</body>
