@@ -79,7 +79,7 @@ if(isset($_POST['user']) && isset($_POST['score'])){
     </div>
 
     <!-- The Modal -->
-    <div id="myModal" class="modal">
+    <div id="myModal" class="modal" style="display: none;">
         <!-- Modal content -->
         <div class="modal-content">
             <div class="modal-header">
