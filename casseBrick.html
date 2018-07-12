@@ -17,20 +17,6 @@
         height: 100%;
         margin: 0px;
     }
-
-    #modal{
-        display: none; /* Hidden by default */
-        position: fixed; /* Stay in place */
-        z-index: 1; /* Sit on top */
-        padding-top: 100px; /* Location of the box */
-        left: 0;
-        top: 0;
-        width: 100%; /* Full width */
-        height: 100%; /* Full height */
-        overflow: auto; /* Enable scroll if needed */
-        background-color: rgb(0,0,0); /* Fallback color */
-        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-    }
     </style>
 </head>
 <body>
@@ -42,38 +28,6 @@
             <li><a href="berteau.php">B's ascent</a></li>
         </ul>
     </div>
-
-    <!-- The Modal -->
-    <div id="myModal" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="close">&times;</span>
-                <h2>Great score !</h2>
-            </div>
-            <div class="modal-body">
-                <p>Enter your name to save your score</p>
-                <input type="text" name="user" value="Ex: TheBest">
-            </div>
-            <div class="modal-footer">
-                <h3>You can find your score at the right of the game</h3>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        var modal = document.getElementById('myModal');
-        var span = document.getElementsByClassName("close")[0];
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-    </script>
 
     <div align="center">
         <canvas id="Game" width="480" height="320"></canvas>
